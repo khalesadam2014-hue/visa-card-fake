@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Carte de Test complet (Développement)</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; max-width: 400px; }
+        button { background-color: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; transition: 0.3s; }
+        button:hover { background-color: #0056b3; }
+        
+        /* Style de la fausse carte */
+        .carte { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 10px; text-align: left; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .type-carte { font-size: 18px; font-weight: bold; font-style: italic; text-align: right; margin-bottom: 15px; }
+        #numero { font-size: 22px; font-weight: bold; letter-spacing: 3px; margin-bottom: 15px; text-align: center; font-family: 'Courier New', Courier, monospace; }
+        
+        .details-carte { display: flex; justify-content: space-between; font-size: 16px; font-family: 'Courier New', Courier, monospace; }
+        .label { font-size: 10px; text-transform: uppercase; opacity: 0.8; }
+        
+        .disclaimer { font-size: 12px; color: #666; margin-top: 25px; text-align: justify; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Données de Test (Sandbox)</h2>
+        
+        <button onclick="genererToutesLesDonnees()">Générer une carte de test</button>
+        
+        <div class="carte">
+            <div class="type-carte">VISA TEST</div>
+            <div id="numero">XXXX XXXX XXXX XXXX</div>
+            <div class="details-carte">
+                <div>
+                    <div class="label">Expire à fin</div>
+                    <span id="exp">MM/AA</span>
+                </div>
+                <div>
+                    <div class="label">CVV</div>
+                    <span id="cvv">XXX</span>
+                </div>
+            </div>
+        </div>
+        
+        <p class="disclaimer">
+            <strong>Avertissement légal :</strong> Ces données sont générées aléatoirement côté client (sur votre navigateur). Le numéro passe l'algorithme de Luhn, mais n'est relié à aucune banque. Le CVV et la date sont fictifs. À utiliser exclusivement pour tester des formulaires web (Stripe, PayPal en mode développeur, etc.).
+        </p>
+    </div>
+
+    <script>
+        // 1. Génération du numéro de carte (Algorithme de Luhn)
+        function genererVisaTest() {
+            let numero = "4"; 
+            for (let i = 0; i < 14; i++) {
+                numero += Math.floor(Math.random() * 10);
+            }
+            
+            let somme = 0;
+            for (let i = 0; i < 15; i++) {
+                let chiffre = parseInt(numero[i]);
+                if (i % 2 === 0) {
+                    chiffre *= 2;
+                    if (chiffre > 9) chiffre -= 9;
+                }
+                somme += chiffre;
+            }
+            
+            let chiffreControle = (10 - (somme % 10)) % 10;
+            numero += chiffreControle; 
+            
+            return numero.match(/.{1,4}/g).join(' ');
+        }
+
+        // 2. Génération de la date d'expiration (dans le futur)
+        function genererDateExpiration() {
+            let mois = Math.floor(Math.random() * 12) + 1;
+            let moisStr = mois < 10 ? "0" + mois : mois.toString();
+            
+            // Récupère l'année actuelle en format 2 chiffres (ex: 26 pour 2026)
+            let anneeCourante = new Date().getFullYear() % 100;
+            
+            // Ajoute entre 1 et 5 ans à l'année courante
+            let annee = anneeCourante + Math.floor(Math.random() * 5) + 1; 
+            
+            return moisStr + "/" + annee;
+        }
+
+        // 3. Génération du CVV (3 chiffres aléatoires)
+        function genererCVV() {
+            let cvv = Math.floor(Math.random() * 1000);
+            // padStart permet de forcer l'affichage de 3 chiffres (ex: "4" devient "004")
+            return cvv.toString().padStart(3, '0');
+        }
+
+        // 4. Fonction principale pour tout mettre à jour
+        function genererToutesLesDonnees() {
+            document.getElementById("numero").innerText = genererVisaTest();
+            document.getElementById("exp").innerText = genererDateExpiration();
+            document.getElementById("cvv").innerText = genererCVV();
+        }
+        
+        // Générer une carte dès l'ouverture de la page
+        window.onload = genererToutesLesDonnees;
+    </script>
+
+</body>
+</html>
